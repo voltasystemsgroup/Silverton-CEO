@@ -1,0 +1,39 @@
+03
+Shady Grove Bar
+
+04
+silverton_lounge
+
+07
+Secondary Pit
+
+08
+Main Pit
+
+0A
+Poker Room
+
+0B
+Mi Casa Podium
+----------Only have Mi Casa
+
+0C
+Mi Casa Podium
+----------Only have Mi Casa
+
+0D
+Twin Creeks
+----------Don't Have
+
+19
+Center Bar TPS-3000
+
+06
+Silverton Mermaid Bar (Rev .1)
+----------Don't Have
+
+09
+Silverton VIP
+
+1C
+SilvertonRev5

@@ -1,0 +1,15 @@
+[Entries]
+FLIPTOP=232:cresnet 03
+232=rs232 3,0,n,8,1,n,y
+CP2 OLD IP=tcp 10.1.6.70
+CP3 Temp=tcp 10.0.1.4
+
+[Settings]
+DefaultEntry=
+
+[Comments]
+FLIPTOP=
+232=
+CP2 OLD IP=
+CP3 Temp=
+

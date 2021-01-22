@@ -1,0 +1,12 @@
+<Device Model="CP2E">
+   <Network Type="Cresnet" Id="01">
+      <Device Model="QM-FTCC-TPS_TPS-4" DeviceId="03" Name="QM-FTCC-TPS_TPS4 (Cresnet)"/>
+   </Network>
+   <Network Type="Ethernet" Id="05">
+      <Device Model="CEN-RFGW-EX" DeviceId="03" Name="CEN-RFGW-EX [2ND FLOOR]">
+         <Network Type="RF">
+            <Device Model="HR-150,HRI-150" DeviceId="03" Name="HR-150"/>
+         </Network>
+      </Device>
+   </Network>
+</Device>

@@ -1,0 +1,75 @@
+[BEGIN]
+  Version=1
+[END]
+[BEGIN]
+  ObjTp=FSgntr
+  Sgntr=UserSPlus
+  RelVrs=1
+  IntStrVrs=1
+  SPlusVrs=3.02.01
+  InclDatVrs=1.17
+  CrossCplrVrs=NOT INSTALLED
+[END]
+[BEGIN]
+  InputCue1=AudioPort
+  InputSigType1=Digital
+  InputCue2=VideoPort
+  InputSigType2=Digital
+  InputCue3=MulticastIP
+  InputSigType3=Digital
+  InputCue4=SendAudioPort
+  InputSigType4=Digital
+  InputCue5=SendVideoPort
+  InputSigType5=Digital
+  InputCue6=SendMulticastIp
+  InputSigType6=Digital
+  InputList2Cue1=TextIn$
+  InputList2SigType1=Serial
+  InputList2Cue2=FromDevice$
+  InputList2SigType2=Serial
+  OutputList2Cue1=AudioPort$
+  OutputList2SigType1=Serial
+  OutputList2Cue2=VideoPort$
+  OutputList2SigType2=Serial
+  OutputList2Cue3=MulticastIP$
+  OutputList2SigType3=Serial
+  OutputList2Cue4=TextOut$
+  OutputList2SigType4=Serial
+  OutputList2Cue5=ToDevice$
+  OutputList2SigType5=Serial
+  ObjTp=Symbol
+  Exclusions=1,19,20,21,88,89,310,718,756,854,
+  Name=Polycom Streaming Processor
+  SmplCName=PolystrB.usp
+  Code=1
+  MinVariableInputs=6
+  MaxVariableInputs=6
+  MinVariableInputsList2=2
+  MaxVariableInputsList2=2
+  MinVariableOutputs=0
+  MaxVariableOutputs=0
+  MinVariableOutputsList2=5
+  MaxVariableOutputsList2=5
+  Expand=expand_randomly
+  ProgramTree=Logic
+  SymbolTree=32
+  Hint=
+  HelpID= 
+  Render=4
+  Smpl-C=16
+  CompilerCode=-48
+  CompilerParamCode=27
+  CompilerParamCode5=14
+  NumFixedParams=1
+  NVStorage=10
+  ParamSigType1=String
+  ParamCue1=[Reference Name]
+  SmplCInputCue1=o#
+  SmplCOutputCue1=i#
+  SmplCInputList2Cue1=an#
+  SmplCOutputList2Cue1=ai#
+  SPlusShortSaveName=PolystrB.uf
+  SPlusLongSaveName=POLYSTRB.UF
+  SPlus2CompiledName=S2_PolystrB
+  SymJam=NonExclusive
+[END]

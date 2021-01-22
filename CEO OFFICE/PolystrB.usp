@@ -1,0 +1,170 @@
+/*******************************************************************************************
+  SIMPL+ Module Information
+  (Fill in comments below)
+*******************************************************************************************/
+/*
+Dealer Name: Crestron Electronics
+System Name:
+System Number:
+Programmer: CRR
+Comments:
+*/
+
+/*******************************************************************************************
+  Compiler Directives
+  (Uncomment and declare compiler directives as needed)
+*******************************************************************************************/
+#SYMBOL_NAME "Polycom Streaming Processor"
+// #HINT ""
+// #DEFINE_CONSTANT
+// #CATEGORY "" 
+// #DEFAULT_VOLATILE
+#DEFAULT_NONVOLATILE
+/*
+#HELP_BEGIN
+   (add additional lines of help lines)
+#HELP_END
+*/
+
+/*******************************************************************************************
+  Include Libraries
+  (Uncomment and include additional librarys as needed)
+*******************************************************************************************/
+// #CRESTRON_LIBRARY ""
+// #USER_LIBRARY ""
+
+/*******************************************************************************************
+  DIGITAL, ANALOG and SERIAL INPUTS and OUTPUTS
+  (Uncomment and declare inputs and outputs as needed)
+*******************************************************************************************/
+DIGITAL_INPUT AudioPort, VideoPort, MulticastIP, SendAudioPort, SendVideoPort, SendMulticastIp; 
+// ANALOG_INPUT  
+STRING_INPUT TextIn$[50];
+BUFFER_INPUT FromDevice$[500]; 
+
+// DIGITAL_OUTPUT 
+// ANALOG_OUTPUT 
+STRING_OUTPUT AudioPort$, VideoPort$, MulticastIP$, TextOut$, ToDevice$; 
+
+/*******************************************************************************************
+  Global Variables
+  (Uncomment and declare global variables as needed)
+*******************************************************************************************/
+INTEGER Semaphore, Marker1, Marker2, Junk;
+STRING AudioPortInt$[15], VideoPortInt$[15], MulticastIPInt$[48], Tempstring$[100];
+
+/*******************************************************************************************
+  Event Handlers
+  (Uncomment and declare additional event handlers as needed)
+*******************************************************************************************/
+
+PUSH AudioPort
+	{
+    TextOut$ = AudioPortInt$;
+	}
+	
+PUSH VideoPort
+	{
+	TextOut$ = VideoPortInt$;
+	}
+	
+PUSH MulticastIp
+	{
+	TextOut$ = MulticastIpInt$;
+	}
+	
+PUSH SendAudioPort
+	{
+	ToDevice$ = "streamaudioport set " + TextIn$;
+	}
+
+PUSH SendVideoPort
+	{
+	ToDevice$ = "streamvideoport set " + TextIn$;
+	}
+
+PUSH SendMulticastIp
+	{
+	ToDevice$ = "streammulticastip set " + TextIn$;
+	}
+
+CHANGE FromDevice$
+	{
+    if(Semaphore = 0)
+    	{
+    	Semaphore = 1;
+    	While((find("\x0D\x0A", FromDevice$) > 0) || (find("\x0A\x0D", FromDevice$) > 0))
+    		{
+    		marker1 = find("\x0D\x0A", FromDevice$);
+    		marker2 = find("\x0A\x0D", FromDevice$);
+    		if(((marker1 < marker2) && (marker1 > 0) && (marker2 > 0)) || (marker2 = 0)) 
+    			{
+    			Tempstring$ = Remove("\x0D\x0A", FromDevice$);
+    			Tempstring$ = left(Tempstring$, len(Tempstring$) - 2);
+    			if(len(Tempstring$) > 0)
+    				{
+    				While((byte(Tempstring$, 1) = 13) || (byte(Tempstring$, 1) = 10))
+    					{
+    					Junk = getc(Tempstring$);
+    					}
+    				}
+    			}
+    		else
+    			{
+    			Tempstring$ = Remove("\x0A\x0D", FromDevice$);
+    			Tempstring$ = left(Tempstring$, len(Tempstring$) - 2);
+    			if(len(Tempstring$) > 0)
+    				{
+    				While((byte(Tempstring$, 1) = 13) || (byte(Tempstring$, 1) = 10))
+    					{
+    					Junk = getc(Tempstring$);
+    					}
+    				}
+    			}
+			if(len(TempString$) > 0)
+				{
+    			Marker1 = find("streamaudioport ", Tempstring$);
+    			if(Marker1 > 0)
+    				{
+    				if(find(" get", Tempstring$) = 0)
+    					{
+    					AudioPortInt$ = mid(Tempstring$, marker1 + 16, len(Tempstring$) - 16);
+    					AudioPort$ = AudioPortInt$;
+    					}
+    				}
+    			Marker1 = find("streamvideoport ", Tempstring$);
+    			if(Marker1 > 0)
+    				{
+    				if(find(" get", Tempstring$) = 0)
+    					{
+    					VideoPortInt$ = mid(Tempstring$, marker1 + 16, len(Tempstring$) - 16);
+    					VideoPort$ = VideoPortInt$;
+    					}
+    				}
+    			Marker1 = find("multicastip ", Tempstring$);
+    			if(Marker1 > 0)
+    				{
+    				if(find(" get", Tempstring$) = 0)
+    					{
+    					MulticastIpInt$ = mid(Tempstring$, marker1 + 12, len(Tempstring$) - 12);
+    					MulticastIp$ = MulticastIpInt$;
+    					}
+    				}
+    			}
+    		}
+       	Semaphore = 0;
+    	}			
+	}
+
+/*******************************************************************************************
+  Main()
+  Uncomment and place one-time startup code here
+  (This code will get called when the system starts up)
+*******************************************************************************************/
+
+Function Main()
+	{
+    Semaphore = 0;
+	}
+
+

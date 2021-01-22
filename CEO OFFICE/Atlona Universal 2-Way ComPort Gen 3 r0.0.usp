@@ -1,0 +1,115 @@
+// SIMPL+ Module Information
+/*
+Dealer Name:		Atlona
+System Name:		Atlona Universal 2-Way ComPort Gen 3
+Programmer:			cdr/Front Side Solutions
+Comments:				For use with any FSS Atlona module that supports Gen3 RS-232 extension via HDBaseT or Local Ports.
+*/
+
+// Compiler Directives
+#ENABLE_DYNAMIC
+#SYMBOL_NAME "Atlona Universal 2-Way ComPort Gen 3 r0.0.usp"
+#CATEGORY "23" // Switcher
+#DEFAULT_VOLATILE
+#ENABLE_STACK_CHECKING
+#ENABLE_TRACE
+#ENCODING_ASCII
+#HELP_PDF_FILE "Atlona Universal 2-Way ComPort Gen3 r0.0 Help.pdf"
+/*
+#HELP_BEGIN
+
+#HELP_END
+*/
+
+// DIGITAL, ANALOG and SERIAL INPUTS and OUTPUTS
+DIGITAL_INPUT 	Enable;
+BUFFER_INPUT 		Tx$[256], Fm_Swt_Mod_$[256];
+STRING_OUTPUT		_SKIP_, Rx$, To_Swt_Mod_$;
+
+// Parameters
+INTEGER_PARAMETER	_SKIP_,_SKIP_,_SKIP_,RxWindow,Zone;
+STRING_PARAMETER	BaudRate[6], DataBits[1], Parity[1], StopBits[1];
+
+// Parameter Properties
+#BEGIN_PARAMETER_PROPERTIES Zone
+	propValidUnits = unitDecimal;
+	propDefaultValue = 1d;
+  propList = 	{1d,"Zone 1"},{2d,"Zone 2"},{3d,"Zone 3"},{4d,"Zone 4"},{5d,"Zone 5"},{6d,"Zone 6"},{7d,"Zone 7"},{8d,"Zone 8"},
+  			 			{9d,"Zone 9"},{10d,"Zone 10"},{11d,"Zone 11"},{12d,"Zone 12"},{13d,"Zone 13"},{14d,"Zone 14"},{15d,"Zone 15"},{16d,"Zone 16"},
+			 				{17d,"Zone 17"},{18d,"Zone 18"},{19d,"Zone 19"},{20d,"Zone 20"},{21d,"Zone 21"},{22d,"Zone 22"},{23d,"Zone 23"},{24d,"Zone 24"},
+			 				{25d,"Zone 25"},{26d,"Zone 26"},{27d,"Zone 27"},{28d,"Zone 28"},{29d,"Zone 29"},{30d,"Zone 30"},{31d,"Zone 31"},{32d,"Zone 32"};
+#END_PARAMETER_PROPERTIES
+
+#BEGIN_PARAMETER_PROPERTIES BaudRate
+	propValidUnits = unitString;
+	//propDefaultValue = "9600";
+	propList = {"2400","2,400"},{"4800","4,800"},{"9600","9,600"},{"19200","19,200"},{"38400","38,400"},{"57600","57,600"},{"115200","115,200"};
+#END_PARAMETER_PROPERTIES
+
+#BEGIN_PARAMETER_PROPERTIES DataBits
+	propValidUnits = unitString;
+	//propDefaultValue = "8";
+	propList = {"7","7"},{"8","8"};
+#END_PARAMETER_PROPERTIES
+
+#BEGIN_PARAMETER_PROPERTIES Parity
+	propValidUnits = unitString;
+	//propDefaultValue = "0";
+	propList = {"0","None"},{"1","Odd"},{"2","Even"};
+#END_PARAMETER_PROPERTIES
+
+#BEGIN_PARAMETER_PROPERTIES StopBits
+	propValidUnits = unitString;
+	//propDefaultValue = "1";
+	propList = {"1","1"},{"2","2"};
+#END_PARAMETER_PROPERTIES
+
+// Global Variables
+	STRING sLast$[256],sRxHead$[11],sJunk$[256];
+	INTEGER nLen;
+
+// Event Handlers
+PUSH Enable
+{
+	ClearBuffer(Tx$);
+	ClearBuffer(Fm_Swt_Mod_$);
+  MAKESTRING(To_Swt_Mod_$, "RS232para%d[%s,%s,%s,%s]\x0D",Zone, BaudRate, DataBits, Parity, StopBits);
+}
+
+THREADSAFE CHANGE Fm_Swt_Mod_$
+{
+	
+	IF(Enable)
+	{
+		IF (FIND("]",Fm_Swt_Mod_$))	// Unsolicited Return
+		{
+			sJunk$ = REMOVE("[",Fm_Swt_Mod_$);
+			nLen = LEN(Fm_Swt_Mod_$);
+			Rx$ = REMOVEBYLENGTH (nLen - 3, Fm_Swt_Mod_$);
+			ClearBuffer(Fm_Swt_Mod_$);
+		}
+  	Else
+			ClearBuffer(Fm_Swt_Mod_$);
+  }
+	Else
+		ClearBuffer(Fm_Swt_Mod_$);
+}
+
+THREADSAFE CHANGE Tx$
+{
+	IF(Enable)
+	{
+		MAKESTRING(To_Swt_Mod_$, "RS232zone%d[%s]\x0D",Zone, Tx$);
+		ClearBuffer(Tx$);
+	}
+	Else
+		ClearBuffer(Tx$);
+}
+
+// Main()
+Function Main()
+{
+  WaitForInitializationComplete();
+  MAKESTRING(To_Swt_Mod_$, "RS232para%d[%s,%s,%s,%s]\r",Zone, BaudRate, DataBits, Parity, StopBits);
+}
+

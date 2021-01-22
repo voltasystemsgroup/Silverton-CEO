@@ -1,0 +1,64 @@
+// SIMPL+ Module Information
+/*
+Dealer Name:		Atlona
+System Name:		Atlona Response Sorter r0.0
+Programmer:			cdr/Front Side Solutions
+Comments:				Internal Use.
+*/
+
+// Compiler Directives
+#ENABLE_DYNAMIC
+#SYMBOL_NAME "Atlona Response Sorter r0.0.usp"
+#DEFAULT_VOLATILE
+#ENABLE_STACK_CHECKING
+#ENABLE_TRACE
+#ENCODING_ASCII
+/*
+#HELP_BEGIN
+
+#HELP_END
+*/
+
+// DIGITAL, ANALOG and SERIAL INPUTS and OUTPUTS
+BUFFER_INPUT 		Fm_Swt_Mod_$[256];
+STRING_OUTPUT		To_Main_$, To_Comport_Mod_$[32];
+
+// Global Variables
+STRING sJunk$[12],sTemp$[12];
+INTEGER nLen, nStart, nZone;
+// Event Handlers
+THREADSAFE CHANGE Fm_Swt_Mod_$
+{
+	
+	IF (FIND("]\n",Fm_Swt_Mod_$))	// Comport Return
+	{
+		IF (FINDNOCASE("RS232Zone",Fm_Swt_Mod_$))	// This is an Echo Back
+			nStart = 9;
+		Else If	(FINDNOCASE("#*PORT",Fm_Swt_Mod_$))	// This is Return Response
+			nStart = 6;
+		
+		nLen = FIND("[",Fm_Swt_Mod_$) - 1;
+		sTemp$ = LEFT(Fm_Swt_Mod_$, nLen);
+		sJunk$ = REMOVEBYLENGTH(nStart, sTemp$);
+		nZone = ATOI(sTemp$);
+
+		To_Comport_Mod_$[nZone] = REMOVE("]\n",Fm_Swt_Mod_$);
+		ClearBuffer(Fm_Swt_Mod_$);
+	}
+
+	ELSE IF (FIND("\n",Fm_Swt_Mod_$))	// General Return
+	{
+		To_Main_$ = REMOVE("\n",Fm_Swt_Mod_$);
+		ClearBuffer(Fm_Swt_Mod_$);
+	}
+
+	Else
+		ClearBuffer(Fm_Swt_Mod_$);
+}
+
+// Main()
+Function Main()
+{
+  WaitForInitializationComplete();
+}
+

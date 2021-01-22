@@ -1,0 +1,436 @@
+/*******************************************************************************************
+  SIMPL+ Module Information
+  (Fill in comments below)
+*******************************************************************************************/
+/*
+Dealer Name: Crestron Electronics
+System Name:
+System Number:
+Programmer: CRR
+Comments:
+*/
+
+/*******************************************************************************************
+  Compiler Directives
+  (Uncomment and declare compiler directives as needed)
+*******************************************************************************************/
+#SYMBOL_NAME "Addressbook Processor 3"
+// #HINT ""
+
+#CATEGORY "20" 
+// #DEFAULT_VOLATILE
+// #DEFAULT_NONVOLATILE
+
+#DEFINE_CONSTANT NUMBEROFENTRIES 100
+#DEFINE_CONSTANT MAXTEXTCHARACTERS 50
+#DEFINE_CONSTANT MAXNUMERICALCHARACTERS 50
+
+/*
+#HELP_BEGIN
+   (add additional lines of help lines)
+#HELP_END
+*/
+
+/*******************************************************************************************
+  Include Libraries
+  (Uncomment and include additional librarys as needed)
+*******************************************************************************************/
+// #CRESTRON_LIBRARY ""
+// #USER_LIBRARY ""
+
+/*******************************************************************************************
+  DIGITAL, ANALOG and SERIAL INPUTS and OUTPUTS
+  (Uncomment and declare inputs and outputs as needed)
+*******************************************************************************************/
+DIGITAL_INPUT DirectoryFirst;
+DIGITAL_INPUT DirectoryPrev;
+DIGITAL_INPUT DirectoryNext;
+DIGITAL_INPUT DirectoryLast;
+DIGITAL_INPUT DirectorySaveEntry;
+DIGITAL_INPUT DirectoryDeleteEntry;
+DIGITAL_INPUT DirectoryClearSettings;
+DIGITAL_INPUT AddressbookInitialize;
+DIGITAL_INPUT AddNew;
+DIGITAL_INPUT Start;
+DIGITAL_INPUT DirectorySelect[25];
+ANALOG_INPUT EntriesPerScreen;
+ANALOG_INPUT MaxCharacters;
+ANALOG_INPUT QualityIn;
+ANALOG_INPUT PageSelector;
+STRING_INPUT NameIn$[MAXTEXTCHARACTERS];
+STRING_INPUT Number1In$[MAXNUMERICALCHARACTERS];
+STRING_INPUT Number2In$[MAXNUMERICALCHARACTERS];
+
+DIGITAL_OUTPUT Sorting, AddNewOut, AddNewDone, DirectoryOut[26];
+STRING_OUTPUT NameOut$;
+STRING_OUTPUT Number1Out$;
+STRING_OUTPUT Number2Out$;
+ANALOG_OUTPUT QualityOut;
+ANALOG_OUTPUT CurrentPageOut;
+ANALOG_OUTPUT TotalPagesOut;
+STRING_OUTPUT Directory$[25];
+
+/*******************************************************************************************
+  Global Variables
+  (Uncomment and declare global variables as needed)
+*******************************************************************************************/
+INTEGER Flag, i, j, k, TotalRecords, Index, Location, StartCounter, MaxChar, iTemp;
+INTEGER Temp, TotalScreens, CurrentScreen, Counter, DirectorySelected, NameCheck;
+INTEGER EntryUsed[NUMBEROFENTRIES], LocationUsed[NUMBEROFENTRIES];
+STRING Temp$[MAXTEXTCHARACTERS], Test$[MAXTEXTCHARACTERS];
+INTEGER Quality[NUMBEROFENTRIES];
+STRING Name$[NUMBEROFENTRIES][MAXTEXTCHARACTERS];
+STRING Number1$[NUMBEROFENTRIES][MAXNUMERICALCHARACTERS];
+STRING Number2$[NUMBEROFENTRIES][MAXNUMERICALCHARACTERS];
+STRING TempStorage$[NUMBEROFENTRIES][MAXTEXTCHARACTERS];
+
+
+/*******************************************************************************************
+  Functions
+  (Add any additional functions here)
+  Note:  Functions must be physically placed before the location in
+         the code that calls them.
+*******************************************************************************************/
+Function InitializeDirectory()
+	{
+	For(i = 0 to NUMBEROFENTRIES)
+		{
+		Name$[i] = "";
+		TempStorage$[i] = "";
+		Number1$[i] = "";
+		Number2$[i] = "";
+		Quality[i] = 0;
+		EntryUsed[i] = 0;
+		LocationUsed[i] = 0;
+		}
+	TotalRecords = 0;
+	Flag = 1219;
+	}
+
+Function DetermineTotalScreens()
+	{
+	if(TotalRecords > NUMBEROFENTRIES)
+		{
+			TotalRecords = 0;
+		}
+	if(TotalRecords mod EntriesPerScreen = 0)
+		{
+		TotalScreens = TotalRecords / EntriesPerScreen;
+		}
+	else
+		{
+		TotalScreens = TotalRecords / EntriesPerScreen + 1;
+   		}
+   	if(TotalScreens = 0) TotalPagesOut = 1;
+   	else TotalPagesOut = TotalScreens;
+   	}
+
+Function RefreshDirectory()
+	{
+	if(TotalRecords >= EntriesPerScreen * CurrentScreen) 
+		{
+		Counter = EntriesPerScreen * CurrentScreen;
+		StartCounter = (CurrentScreen - 1) * EntriesPerScreen + 1;
+		}
+	else
+		{
+		Counter = TotalRecords;
+		StartCounter = (CurrentScreen - 1) * EntriesPerScreen + 1;
+		}
+	k = 1;
+	For(i = StartCounter to Counter)
+		{
+		if(EntryUsed[i] < NUMBEROFENTRIES)
+			{
+			Directory$[k] = left(Name$[EntryUsed[i]], MaxChar);
+			}
+		k = k + 1;
+		processlogic();
+		}
+	if(k <= EntriesPerScreen)
+		{
+		for(i = k to entriesPerScreen)
+			{
+			Directory$[i] = "";
+			processlogic();
+			}
+		}
+	if(DirectorySelected >= ((CurrentScreen - 1) * EntriesPerScreen) && (DirectorySelected <= currentScreen * entriesPerScreen))
+		{
+		if((DirectorySelected mod EntriesPerScreen) > 0)
+			{
+			DirectoryOut[DirectorySelected mod EntriesPerScreen] = 1;
+			processlogic();
+			DirectoryOut[DirectorySelected mod EntriesPerScreen] = 0;
+			}
+		}
+	else
+		{
+		DirectoryOut[26] = 1;
+		processlogic();
+		DirectoryOut[26] = 0;
+		}
+	}
+	
+Function ClearSettings()
+	{
+	NameOut$ = "";
+	Number1Out$ = "";
+	Number2Out$ = "";
+	QualityOut = 0;
+	}
+	
+Function AddEntry()
+	{
+	i = 1;
+	Index = 1;
+	if(TotalRecords > 0)
+		{
+		while((TempStorage$[i] < Test$) && (i <= TotalRecords))
+			{
+			i = i + 1;
+			}
+		Index = i;
+		if(i <= TotalRecords)
+			{
+			For(j = TotalRecords + 1 to i step -1)	
+        		{
+        		TempStorage$[j] = TempStorage$[j - 1];
+        		EntryUsed[j] = EntryUSed[j - 1];
+        	    }		
+        	}
+        }
+    TempStorage$[Index] = Lower(NameIn$);
+    EntryUsed[Index] = Location;
+    TotalRecords = TotalRecords + 1;
+    NameCheck = NameCheck + len(NameIn$);
+    }
+    
+Integer_Function FindNextAvailableLocation()
+	{
+	For(i = 1 to NUMBEROFENTRIES)
+		{
+		if(LocationUsed[i] = 0)
+			{
+			return (i);
+			}
+		}
+	}
+				
+/*******************************************************************************************
+  Event Handlers
+  (Uncomment and declare additional event handlers as needed)
+*******************************************************************************************/
+                     
+CHANGE PageSelector
+	{
+	if((PageSelector > 0) && (PageSelector <= TotalScreens))
+		{
+		CurrentScreen = PageSelector;
+		CurrentPageOut = PageSelector;
+		Call RefreshDirectory();
+		}
+	}
+
+CHANGE MaxCharacters
+	{
+	if(MaxCharacters <= MAXTEXTCHARACTERS)
+		{
+		MaxChar = MaxCharacters;
+		}
+	else
+		{
+		MaxChar = MAXTEXTCHARACTERS;
+		}
+	}
+	
+PUSH AddressbookInitialize
+	{
+	Call InitializeDirectory();
+	Call DetermineTotalScreens();
+	CurrentScreen = 1;
+	CurrentPageOut = 1;
+	Call RefreshDirectory();
+	NameCheck = 0;
+	}
+
+PUSH DirectoryFirst
+	{
+	CurrentScreen = 1;
+	CurrentPageOut = 1;
+	Call RefreshDirectory();
+	}
+	
+PUSH DirectoryNext
+	{
+	if(CurrentScreen < TotalScreens)
+		{
+		CurrentScreen = CurrentScreen + 1;
+		CurrentPageOut = CurrentScreen;
+		Call RefreshDirectory();
+		}
+	}
+
+PUSH DirectoryPrev
+	{
+	if(CurrentScreen > 1)
+		{
+		CurrentScreen = CurrentScreen - 1;
+		CurrentPAgeOut = CurrentScreen;
+		Call RefreshDirectory();
+		}
+	}
+
+PUSH DirectoryLast
+	{
+	if(TotalScreens > 0)
+		{
+		CurrentScreen = TotalScreens;
+		}
+	else
+		{
+		CurrentScreen = 1;
+		}
+		CurrentPageOut = CurrentScreen;
+		Call RefreshDirectory();
+	}
+	
+PUSH DirectorySelect
+	{
+	if(EntryUsed[(CurrentScreen - 1) * EntriesPerScreen + getlastmodifiedarrayindex()] > 0)
+		{
+		DirectoryOut[getlastmodifiedarrayindex()] = 1;
+		processlogic();
+		DirectoryOut[getlastmodifiedarrayindex()] = 0;
+		DirectorySelected = (CurrentScreen - 1) * EntriesPerScreen + getlastmodifiedarrayindex();
+		NameOut$ = left(Name$[EntryUsed[DirectorySelected]], MaxChar);
+		Number1Out$ = left(Number1$[EntryUsed[DirectorySelected]], MaxChar);
+		Number2Out$ = left(Number2$[EntryUsed[DirectorySelected]], MaxChar);
+		QualityOut = Quality[EntryUsed[DirectorySelected]]; 
+		}                                                                                                                       
+   	}
+	
+PUSH DirectorySaveEntry
+	{
+	if((DirectorySelected > 0) && (AddNew = 0))
+		{
+		Location = EntryUsed[DirectorySelected];
+		if(Name$[Location] = NameIn$)
+			{ 
+			Number1$[Location] = Number1In$;
+			Number2$[Location] = Number2In$;
+    		Quality[Location] = QualityIn;
+    		}
+		else
+			{
+			Sorting = 1;
+			NameCheck = NameCheck - len(Name$[Location]);
+			Location = EntryUsed[DirectorySelected];
+			Name$[Location] = "";
+			Number1$[Location] = "";
+			Number2$[Location] = "";
+			Quality[Location] = 0;
+			LocationUsed[Location] = 0;
+			for(i = directoryselected to totalrecords - 1)
+				{
+				TempStorage$[i] = TempStorage$[i + 1];
+				EntryUsed[i] = EntryUsed[i + 1];
+				}
+			EntryUsed[TotalRecords] = 0;
+			TempStorage$[TotalRecords] = "";
+			TotalRecords = TotalRecords - 1;
+			Location = FindNextAvailableLocation();
+       		Test$ = Lower(NameIn$);
+       		Name$[Location] = NameIn$;
+       		Number1$[Location] = Number1In$;
+			Number2$[Location] = Number2In$;
+    		Quality[Location] = QualityIn;
+    		LocationUsed[Location] = 1;
+    		Call AddEntry();
+    		CurrentScreen = 1;
+    		CurrentPageOut = 1;
+    		Call RefreshDirectory();
+    		Sorting = 0;
+    		}
+    	DirectorySelected = 0;
+    	}
+	else if(AddNew = 1)
+       	{
+       	Sorting = 1;
+       	Location = FindNextAvailableLocation();
+       	Test$ = Lower(NameIn$);
+       	Name$[Location] = NameIn$;
+       	Number1$[Location] = Number1In$;
+				Number2$[Location] = Number2In$;
+    		Quality[Location] = QualityIn;
+    		LocationUsed[Location] = 1;
+	    	Call AddEntry();
+  	  	Call DetermineTotalScreens();
+    		CurrentScreen = 1;
+    		CurrentPageOut = 1;
+	    	Call RefreshDirectory();
+  	  	DirectorySelected = 0;
+    		Sorting = 0;
+    		}
+}
+    
+PUSH DirectoryDeleteEntry
+	{
+	if(DirectorySelected > 0)
+		{
+		Sorting = 1;
+		Call ClearSettings();
+		Location = EntryUsed[DirectorySelected];
+		NameCheck = NameCheck - len(Name$[Location]);
+		Name$[Location] = "";
+		Number1$[Location] = "";
+		Number2$[Location] = "";
+		Quality[Location] = 0;
+		LocationUsed[Location] = 0;
+		for(i = directoryselected to totalrecords - 1)
+			{
+			TempStorage$[i] = TempStorage$[i + 1];
+			EntryUsed[i] = EntryUsed[i + 1];
+			}
+		EntryUsed[TotalRecords] = 0;
+		TempStorage$[TotalRecords] = "";
+		TotalRecords = TotalRecords - 1;
+		Call DetermineTotalScreens();
+		CurrentScreen = 1;
+		CurrentPageOut = 1;
+		DirectorySelected = 0;
+		Call RefreshDirectory();
+		Sorting = 0;
+		}
+	}
+		
+PUSH DirectoryClearSettings
+	{
+	Call ClearSettings();
+	}
+	
+PUSH AddNew
+	{
+	If(TotalRecords < NUMBEROFENTRIES)
+		{
+		Call ClearSettings();
+		AddNewOut = 1;
+		processlogic();
+		AddNewOut = 0;
+		DirectorySelected = 0;
+		}
+	}
+	
+PUSH Start
+	{
+	Call DetermineTotalScreens();
+	CurrentScreen = 1;
+	CurrentPageOut = 1;
+	Call RefreshDirectory();
+	}
+
+/*******************************************************************************************
+  Main()
+  Uncomment and place one-time startup code here
+  (This code will get called when the system starts up)
+*******************************************************************************************/
